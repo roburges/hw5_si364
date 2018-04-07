@@ -17,7 +17,7 @@ app.config['SECRET_KEY'] = 'hard to guess string from si364'
 ## TODO 364: Create a database in postgresql in the code line below, and fill in your app's database URI. It should be of the format: postgresql://localhost/YOUR_DATABASE_NAME
 
 ## Your final Postgres database should be your uniqname, plus HW5, e.g. "jczettaHW5" or "maupandeHW5"
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get('DATABASE_URL') or "postgresql://localhost/todo"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get('DATABASE_URL') or "postgresql://postgres:Soulfood123@localhost:5432/todo"
 ## Provided:
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -153,16 +153,16 @@ def one_list(ident):
 @app.route('/update/<item>',methods=["GET","POST"])
 def update(item):
     form = UpdateForm()
-    if request.method == 'POST':
-        priority = request.form['priority']
-        print(priority)
-        item = TodoItem.query.filter_by(id=item).first()
-        if item:
-            item.priority = priority
-            db.session.commit()
-            flash("Updated priority of {}".format(item.description))
-            return redirect(url_for('all_lists'))
-    return render_template('update_item.html', form=form)
+    form2=TodoListForm()
+    if form.validate_on_submit():
+        priority = form.priority.data
+        desc=form2.items.data
+        i = TodoItem.query.filter_by(description=item).first()
+        i.priority = priority
+        db.session.commit()
+        flash("Updated priority of:" + desc[0]) 
+        return redirect(url_for('all_lists'))
+    return render_template('update_item.html', item=item, form = form)
 
 
 # TODO 364: Complete route to delete a whole ToDoList
@@ -172,9 +172,10 @@ def update(item):
     # HINT: Compare against what you've done for updating and class notes -- the goal here is very similar, and in some ways simpler.
 @app.route('/delete/<lst>',methods=["GET","POST"])
 def delete(lst):
-    db.session.delete(TodoList.query.filter_by(title=lst).first())
-    flash("Deleted list {}".format(lst))
-    return redirect(url_for("all_lists"))
+    l = TodoList.query.filter_by(title=lst).first()
+    db.session.delete(l)
+    flash("Successfully deleted {}".format(lst))
+    return redirect(url_for('all_lists'))
 
 
 if __name__ == "__main__":
