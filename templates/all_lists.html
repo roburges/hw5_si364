@@ -15,7 +15,7 @@ There are no TODO lists to show.
 {% for l in todo_lists %}
     <li>
         <a href="{{ url_for('one_list',ident=l.id)}}">{{ l.title }}</a>
-        <form method="POST" action="{{ url_for('delete',lst=l.id)}}">
+        <form method="POST" action="{{ url_for('delete', lst=l.id)}}">
       	   {{ form.hidden_tag() }}
              {{ form.submit() }}
        </form>
@@ -26,7 +26,7 @@ There are no TODO lists to show.
 
 <div>
 {% for message in get_flashed_messages() %}
-<strong>*** {{ message }} ***</strong>
+<strong>* {{ message }} *</strong>
 {% endfor %}
 </div>
 
