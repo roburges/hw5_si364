@@ -17,7 +17,7 @@ app.config['SECRET_KEY'] = 'hard to guess string from si364'
 ## TODO 364: Create a database in postgresql in the code line below, and fill in your app's database URI. It should be of the format: postgresql://localhost/YOUR_DATABASE_NAME
 
 ## Your final Postgres database should be your uniqname, plus HW5, e.g. "jczettaHW5" or "maupandeHW5"
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get('DATABASE_URL') or "postgresql://localhost/roburgesHW5"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get('DATABASE_URL') or "postgresql://postgres:Soulfood123@localhost:5432/todo"
 ## Provided:
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -131,7 +131,7 @@ def index():
 def all_lists():
     form = DeleteButtonForm()
     lsts = TodoList.query.all()
-    return render_template('all_lists.html',todo_lists=lsts, form=form)
+    return render_template('all_lists.html',form=form,todo_lists=lsts)
 
 # Provided - see below for additional TODO
 # TODO 364: Update the one_list view function and the list_tpl.html view file so that there is an Update button next to each todolist item, and the priority integer of that item can be updated. (This is also addressed in later TODOs.)
@@ -141,7 +141,7 @@ def one_list(ident):
     form = UpdateButtonForm()
     lst = TodoList.query.filter_by(id=ident).first()
     items = lst.items.all()
-    return render_template('list_tpl.html',todolist=lst,items=items,form=form)
+    return render_template('list_tpl.html',todo_lists=lst,items=items,form=form)
 
 # TODO 364: Complete route to update an individual ToDo item's priority
     # This code should use the form you created above for updating the specific item and manage the process of updating the item's priority.
@@ -153,16 +153,13 @@ def one_list(ident):
 @app.route('/update/<item>',methods=["GET","POST"])
 def update(item):
     form = UpdateForm()
-    if request.method == 'POST':
-        priority = request.form['priority']
-        print(priority)
-        item = TodoItem.query.filter_by(id=item).first()
-        if item:
-            item.priority = priority
-            db.session.commit()
-            flash("Updated priority of {}".format(item.description))
-            return redirect(url_for('all_lists'))
-    return render_template('update_item.html', form=form)
+    if form.validate_on_submit():
+        items = TodoItem.query.filter_by(description=item).first()
+        items.priority = form.priority.data
+        db.session.commit()
+        flash("Updated priority of {}".format(item))
+        return redirect(url_for("all_lists"))
+    return render_template("update_item.html", form=form, item=item)
 
 
 # TODO 364: Complete route to delete a whole ToDoList
@@ -172,9 +169,12 @@ def update(item):
     # HINT: Compare against what you've done for updating and class notes -- the goal here is very similar, and in some ways simpler.
 @app.route('/delete/<lst>',methods=["GET","POST"])
 def delete(lst):
-    db.session.delete(TodoList.query.filter_by(title=lst).first())
-    flash("Deleted list {}".format(lst))
-    return redirect(url_for("all_lists"))
+    l= TodoList.query.filter_by(id=lst).first()
+    title = l.title
+    db.session.delete(l)
+    db.session.commit()
+    flash("Successfully deleted todo list, {}".format(title))
+    return redirect(url_for('all_lists'))
 
 
 if __name__ == "__main__":
