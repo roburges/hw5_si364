@@ -1,4 +1,3 @@
-<h1>{{ todolist.title }}</h1>
 {% extends 'index.html' %}
 
 {% block nav %}
@@ -10,10 +9,10 @@
 <ul>
 {% for item in items %}
     <li>
-        {{ item.description }} - Priority: {{ item.priority }}
-        <form method="GET" action="{{ url_for('update', i=item.id)}}">
-           {{ form.hidden_tag() }}
-             {{ form.submit() }}
+      {{ item.description }} - Priority: {{ item.priority }}
+      <form method="POST" action="/update/{{ item.description }}">
+          {{ form.hidden_tag() }}
+          {{ form.submit() }}
        </form>
     </li>
 {% endfor %}
@@ -21,7 +20,7 @@
 
 <div>
 {% for message in get_flashed_messages() %}
-<strong>*** {{ message }} ***</strong>
+<strong>* {{ message }} *</strong>
 {% endfor %}
 </div>
 
